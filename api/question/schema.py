@@ -3,7 +3,11 @@ from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphql import GraphQLError
 
 from api.question.models import Question as QuestionModel
-from utilities.utility import validate_empty_fields, update_entity_fields
+from utilities.utility import (
+    validate_empty_fields,
+    update_entity_fields,
+    validate_DateTime_fields
+    )
 from helpers.auth.authentication import Auth
 
 
@@ -16,13 +20,14 @@ class CreateQuestion(graphene.Mutation):
     class Arguments:
         question_type = graphene.String(required=True)
         question = graphene.String(required=True)
-        start_date = graphene.String(required=True)
-        end_date = graphene.String(required=True)
+        start_date = graphene.DateTime(required=True)
+        end_date = graphene.DateTime(required=True)
     question = graphene.Field(Question)
 
     @Auth.user_roles('Admin')
     def mutate(self, info, **kwargs):
         validate_empty_fields(**kwargs)
+        validate_DateTime_fields(**kwargs)
         question = QuestionModel(**kwargs)
         question.save()
         return CreateQuestion(question=question)
